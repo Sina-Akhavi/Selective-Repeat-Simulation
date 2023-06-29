@@ -6,12 +6,45 @@
     <button class="receiver">B</button>
   </div>
 
-  <button class="send-frame">Send Frame</button>
+  <button class="send-frame" @click="sendFrame()">Send Frame</button>
   <button class="send-rr">Send RR</button>
+
+  <Windows ref="windows" :receiver="B" :sender="A" :recWindow="B.buffer"></Windows>
+  <Log @say-by="produceSentence" ref="log"></Log>
 
 </template>
 
 <script>
+import { sender, receiver } from '../index'
+import Windows from './Windows.vue'
+import Log from './Log.vue'
+
+export default {
+  components: {
+    Windows,
+    Log
+  },
+
+  data() {
+    return {
+      A: sender,
+      B: receiver
+    }
+  },
+
+  methods: {
+    sendFrame() {
+      let stateFrame = this.A.sendFrame(this.B);
+      let status = stateFrame[0];
+      let sentFrame = stateFrame[1];
+      this.$refs.log.senRecFrameWriter(status, sentFrame);
+
+      this.$refs.windows.updateWindows();
+    },
+
+  }
+}
+
 </script>
 
 

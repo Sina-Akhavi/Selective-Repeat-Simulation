@@ -5,39 +5,58 @@
     <div id="a-windows" style="display: inline-block;">
       <p>A window: </p>
       <table>
-        <tr>
-          <td>0</td>
-          <td>1</td>
-          <td>2</td>
-          <td style="background-color: yellow;">3</td>
-          <td style="background-color: yellow;">4</td>
-          <td>5</td>
-          <td>6</td>
+        <tr class="col-container1">
+          <td v-for="(frame, index) in sender.frames" class="a"
+              :style="[(index < 4)? {'background-color':'red'} : {'background-color' :'yellow'}]">{{ frame }}</td>
         </tr>
       </table> 
     </div>
     
     
     <div id="b-windows" style="display: inline-block; float: right;">
-      <p>A window: </p>
+      <p>B window: </p>
       <table>
-        <tr>
-          <td>0</td>
-          <td>1</td>
-          <td>2</td>
-          <td style="background-color: yellow;">3</td>
-          <td style="background-color: yellow;">4</td>
-          <td>5</td>
-          <td>6</td>
+        <tr class="col-container2">
+          <td v-for="(frame, index) in receiver.frames" class="b"
+              :style="[(index < 4)? {'background-color':'red'} : {'background-color' :'yellow'}]">{{ frame }}</td>
         </tr>
       </table>
     </div>
 
   </div>
 
-</template>&nbsp;
+</template>
 
-<script></script>
+<script>
+
+export default {
+  props: ['sender', 'receiver', 'recWindow'],
+
+  methods: {
+    updateWindows() {
+      const senElements = document.getElementsByClassName('a')
+      const recElements = document.getElementsByClassName('b')
+
+      const senBuffer = new String(this.sender.buffer).split(',');
+      const recBuffer = new String(this.receiver.buffer).split(',');
+
+
+      senBuffer.forEach((elem) => {
+        console.log(elem);
+        senElements[new Number(elem)].style.backgroundColor = 'red';
+      })
+    
+
+      recBuffer.forEach((elem) => {
+        recElements[new Number(elem)].style.backgroundColor = 'red';
+      })
+
+    }
+  },
+
+}
+
+</script>
 
 <style>
 

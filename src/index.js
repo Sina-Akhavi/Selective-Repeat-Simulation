@@ -1,170 +1,125 @@
 class Sender {
 
-    constructor(window, timer, name) {
-        this.window = window;
-        this.timer = timer;
-        this.name = name;
+    constructor(frames, buffer, shadedFrom, shadedTo) {
+        this.shadedFrom = shadedFrom;
+        this.shadedTo = shadedTo;
+        this.frames = frames;
+        this.buffer = buffer;
     }
 
     sendFrame(receiver) {
-        let frame = this.window.get();
-        console.log(`F${frame} is being sent from sender`);
-        let isSent = receiver.receiveFrame(this ,this.window.getNext());
-        if (isSent) {
-            console.log(`${receiver.getName()} recived F${frame}`);
-        }
+        this.buffer.push(this.shadedFrom);
+        let frame = this.frames[this.shadedFrom];
+        
+        console.log(`Sent Frame${frame}`);
+        
+        let status = receiver.receiveFrame(this, frame);
+        
+        this.shadedFrom++;
+        this.shadedTo++;
+        
+        console.log(`SENDER: shadedFrom: ${this.shadedFrom}     shadedTo: ${this.shadedTo}`);
+
+        return [status, frame];
     }
 
-    receiveRR(i) {
-        this.window.expand(i);
+    receiveRR(i, receiver) {
+        console.log(`received RR${i}`);
+        this.buffer = [];
+        this.sendFrame(receiver);
     }
 
-    receiveSREJ(receiver, i) {
-        let frame = i;
-        console.log(`${this.getName()} received SREJ ${i}`);
-        console.log(`${this.getName()} sent F${i} again`);
-        receiver.receiveFrame(this ,frame, true);
+    sendRRPBit1(receiver) {
+        console.log(`sent RR(P bit=1)`);
+        receiver.receiveRRPBit1(this);
     }
 
-    getWindow() {
-        return this.window;
-    }
+    receiveSREJ(frame) {
+        console.log(`received SREJ${frame}`);
+        console.log(`sent Frame${frame}`);
+        return `sent ${frame}`;
 
-    getName() {
-        return this.name;
-    }
-
-    getTimer() {
-        return this.timer;
     }
 
     sendDamagedFrame() {
-        this.window.pointer++;
-        return;
+        console.log(`sent damaged Frame${this.frames[this.shadedFrom]}`)
+        this.buffer.push(this.shadedFrom);
+        this.shadedFrom++;
+        this.shadedTo++;
     }
+
 }
 
 class Receiver {
-    name;
-
-    window;
-
-    constructor(window, name) {
-        this.name = name;
-        this.window = window;
-    }
-
-    receiveFrame(sender ,frame, afterSREJ = false) {
-        console.log(`Receiver receives F${frame} successfuly.` );
-        if (frame != this.window.get()) {
-            this.sendSREJ(sender, this.window.get());
-            // this.window.pointer++;
-            return false
-        }
-        if (afterSREJ) {
-            console.log("AfterSREJ");
-            this.window.pointer += 2;
-        } else {
-            this.window.pointer++;
-        }
-
-        return true;
-    }
-
-    sendRR(sender ,i) {
-        this.window.expand(i);
-        sender.receiveRR(i);
-    }
-
-    sendSREJ(sender, i) {
-        sender.receiveSREJ(this, i);
-    }
-
-    getName() {
-        return this.name;
-    }
-
-}
-
-class Windows {
-    array;
-
-    firstShaded;
     
-    lastShaded;
-    
-    pointer;
-
-    buffer;
-
-    windowSize;
-
-    constructor(array ,firstShaded, lastShaded, pointer, buffer, windowSize) {
-        this.array = array;
-        this.firstShaded = firstShaded;
-        this.lastShaded = lastShaded;
-        this.pointer = pointer;
+    constructor(frames, buffer, shadedFrom, shadedTo) {
+        this.shadedFrom = shadedFrom;
+        this.shadedTo = shadedTo;
+        this.frames = frames;
         this.buffer = buffer;
-        this.windowSize = windowSize;
     }
 
-    expand(number) {
-        console.log('number ' + number);
-        console.log('pointer ' + this.pointer);
-        for (let i = this.pointer; true; i++) {
-            if (this.array[i] == number) {
-                this.firstShaded = i;
-                break;
-            }
+    receiveFrame(sender, frame) {
+        let expectedFrame = this.frames[this.shadedFrom];
+
+        if (frame != expectedFrame) {
+            console.log('Hi');
+            this.sendSREJ(sender);
+            return 0;
+        } else {
+            console.log(`received Frame${frame}`);
+            this.buffer.push(this.shadedFrom);
+            this.shadedFrom++;
+            this.shadedTo++;
+
+            console.log(`RECEIVER:  shadedFrom: ${this.shadedFrom}     shadedTo: ${this.shadedTo}`);
+            return 1;
         }
-
-        this.lastShaded = this.firstShaded + this.windowSize - 1;
     }
 
-    getNext() {
-        let next = this.array[this.pointer];
-        this.pointer++;
-        return next;
+    sendRR(sender) {
+        this.buffer = [];
+        let expectedFrame = this.frames[this.shadedFrom];
+        console.log(`Sent RR${expectedFrame}`);
+        sender.receiveRR(expectedFrame, this);
     }
 
-    getShadedFrames() {
-        let shadedFrames = [];
-
-        for (let i = this.firstShaded; i <= this.lastShaded; i++) {
-            shadedFrames.push(this.array[i]);
-        }
-
-        return shadedFrames;
+    receiveRRPBit1(sender) {
+        console.log(`received RR(P bit = 1)`);
+        this.sendRR(sender);
     }
 
-    get() {
-        return this.array[this.pointer];
-    }
+    sendSREJ(sender) {
+        let frame = this.frames[this.shadedFrom];
+        this.buffer.push(this.shadedFrom);
+        this.buffer.push(this.shadedFrom + 1);
+        
+        this.shadedFrom += 2;
+        this.shadedTo += 2;
+        
+        console.log(`SREJ${frame} sent`);
+        sender.receiveSREJ(frame);
 
-    show() {
-        console.log(`main array: ${this.array}`);
-        console.log(`first shaded at index ${this.firstShaded}` +
-            `last shaded at index ${this.lastShaded}`);
-    }
+        console.log(`RECEIVER:  shadedFrom: ${this.shadedFrom}     shadedTo: ${this.shadedTo}`);
 
+    }
 }
 
-var firstShaded = 0;
-var lastShaded = 1;
-var pointer = 0;
-var buffer = -1;
-var windowSize = 2;
-var timer = 10;
+let frames = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
+let buffer = [];
+let shadedFrom = 0;
+let shadedTo = 3;
 
-const senWind = new Windows([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3], firstShaded, 
-    lastShaded, pointer, buffer, windowSize);
+const sender = new Sender(frames, buffer, shadedFrom, shadedTo);
 
-const recWind = new Windows([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3], firstShaded, 
-    lastShaded, pointer, buffer, windowSize);
+let frames2 = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
+let buffer2 = [];
+let shadedFrom2 = 0;
+let shadedTo2 = 3;
 
-const sender = new Sender(senWind, timer, "A"); 
-const receiver = new Receiver(recWind, "B");
+const receiver = new Receiver(frames2, buffer2, shadedFrom2, shadedTo2);
 
 
-export { senWind, recWind, sender, receiver };
+export { sender, receiver };
+
 
