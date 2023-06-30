@@ -31,7 +31,7 @@ export default {
       A: sender,
       B: receiver,
       timeoutID: -1,
-      timeOut: 10000
+      timeOut: 10000,
     }
   },
 
@@ -54,8 +54,9 @@ export default {
       let i = await this.B.sendRR(this.A);
       this.$refs.log.senRRWriter(i);
       this.$refs.windows.updateWindows();
-
+      
       // this.timeoutID = setTimeout(async () => {
+      //   this.alive = false;
       //   this.timeoutID = -1;
       //   this.$refs.log.PBitWriter();
         
@@ -72,6 +73,32 @@ export default {
       let frame = await this.A.sendDamagedFrame();
       this.$refs.log.damagedWriter(frame);
       this.$refs.windows.updateWindows();
+    },
+
+    drive() {
+      console.time();
+
+      document.getElementById('log-container').innerHTML = '';
+      const frames = document.getElementById('input').value.split(',');
+
+      for (let i = 0; i < frames.length; i++) {
+        let firstLetter = frames[i].charAt(0);
+        
+        switch (firstLetter) {
+          case 'f':
+            this.sendFrame();
+            break;
+          
+          case 'F':
+            this.sendDamagedFrame();
+            break;
+          
+          case 'R':
+            this.sendRR();
+            break;
+        }
+      }
+      console.timeEnd();    
     }
 
   }

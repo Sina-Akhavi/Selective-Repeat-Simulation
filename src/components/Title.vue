@@ -5,7 +5,7 @@
   <div class="input-frame-container">
     <label for="input"> Enter Frames: </label>
     <input type="text" id="input">
-    <button @click="">Start</button>
+    <button @click="$emit('exchange-frames')">Start</button>
   </div>
   <br>
   <hr class="hor-line">
@@ -14,7 +14,24 @@
 </template>
 
 
-<script></script>
+<script>
+
+
+export default {
+  props: ['exchangeFrames'],
+
+  emits: ['exchange-frames'],
+
+
+  methods: {
+    start() {
+      this.$emit()
+    }
+  }
+}
+
+
+</script>
 
 
 <style>

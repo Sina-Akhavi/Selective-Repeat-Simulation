@@ -1,7 +1,7 @@
 
 <template>
-  <Title></Title>
-  <SenRecLink></SenRecLink>
+  <Title @exchange-frames="exchangeFrames"></Title>
+  <SenRecLink ref="link"></SenRecLink>
   
 </template>
 
@@ -19,8 +19,8 @@ export default {
 
 
   methods: {
-    hello() {
-      console.log("Hi");
+    exchangeFrames() {
+      this.$refs.link.drive();
     }
   }
 }
