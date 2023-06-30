@@ -7,7 +7,8 @@
   </div>
 
   <button class="send-frame" @click="sendFrame()">Send Frame</button>
-  <button class="send-rr">Send RR</button>
+  <button class="send-frame" @click="sendDamagedFrame()">Send damaged Frame</button>
+  <button class="send-rr" @click="sendRR()">Send RR</button>
 
   <Windows ref="windows" :receiver="B" :sender="A" :recWindow="B.buffer"></Windows>
   <Log @say-by="produceSentence" ref="log"></Log>
@@ -28,19 +29,50 @@ export default {
   data() {
     return {
       A: sender,
-      B: receiver
+      B: receiver,
+      timeoutID: -1,
+      timeOut: 10000
     }
   },
 
   methods: {
-    sendFrame() {
-      let stateFrame = this.A.sendFrame(this.B);
+    async sendFrame() {
+
+      let stateFrame = await this.A.sendFrame(this.B);
       let status = stateFrame[0];
       let sentFrame = stateFrame[1];
       this.$refs.log.senRecFrameWriter(status, sentFrame);
 
       this.$refs.windows.updateWindows();
     },
+
+    async sendRR() {
+      // if (this.timeoutID != -1) {
+      //   clearTimeout(this.timeoutID);
+      // }
+
+      let i = await this.B.sendRR(this.A);
+      this.$refs.log.senRRWriter(i);
+      this.$refs.windows.updateWindows();
+
+      // this.timeoutID = setTimeout(async () => {
+      //   this.timeoutID = -1;
+      //   this.$refs.log.PBitWriter();
+        
+      //   let i = await this.B.sendRR(this.A);
+      //   this.$refs.log.senRRWriter(i);
+      //   this.$refs.windows.updateWindows();
+
+        
+      // }, this.timeOut);
+
+    },
+      
+    async sendDamagedFrame() {
+      let frame = await this.A.sendDamagedFrame();
+      this.$refs.log.damagedWriter(frame);
+      this.$refs.windows.updateWindows();
+    }
 
   }
 }

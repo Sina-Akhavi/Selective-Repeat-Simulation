@@ -42,10 +42,13 @@ class Sender {
     }
 
     sendDamagedFrame() {
-        console.log(`sent damaged Frame${this.frames[this.shadedFrom]}`)
+        let damagedFrame = this.frames[this.shadedFrom];
+        console.log(`sent damaged Frame${damagedFrame}`)
         this.buffer.push(this.shadedFrom);
         this.shadedFrom++;
         this.shadedTo++;
+
+        return damagedFrame;
     }
 
 }
@@ -82,6 +85,7 @@ class Receiver {
         let expectedFrame = this.frames[this.shadedFrom];
         console.log(`Sent RR${expectedFrame}`);
         sender.receiveRR(expectedFrame, this);
+        return expectedFrame;
     }
 
     receiveRRPBit1(sender) {
@@ -105,17 +109,17 @@ class Receiver {
     }
 }
 
-let frames = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
+let frames = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
 let buffer = [];
 let shadedFrom = 0;
-let shadedTo = 3;
+let shadedTo = 7;
 
 const sender = new Sender(frames, buffer, shadedFrom, shadedTo);
 
-let frames2 = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
+let frames2 = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
 let buffer2 = [];
 let shadedFrom2 = 0;
-let shadedTo2 = 3;
+let shadedTo2 = 7;
 
 const receiver = new Receiver(frames2, buffer2, shadedFrom2, shadedTo2);
 

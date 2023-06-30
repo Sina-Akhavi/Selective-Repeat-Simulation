@@ -7,7 +7,7 @@
       <table>
         <tr class="col-container1">
           <td v-for="(frame, index) in sender.frames" class="a"
-              :style="[(index < 4)? {'background-color':'red'} : {'background-color' :'yellow'}]">{{ frame }}</td>
+              :style="[(index <= sender.shadedTo)? {'background-color':'green'} : {'background-color' :'white'}]">{{ frame }}</td>
         </tr>
       </table> 
     </div>
@@ -18,7 +18,7 @@
       <table>
         <tr class="col-container2">
           <td v-for="(frame, index) in receiver.frames" class="b"
-              :style="[(index < 4)? {'background-color':'red'} : {'background-color' :'yellow'}]">{{ frame }}</td>
+              :style="[(index <= receiver.shadedTo)? {'background-color':'green'} : {'background-color' :'white'}]">{{ frame }}</td>
         </tr>
       </table>
     </div>
@@ -29,6 +29,7 @@
 
 <script>
 
+
 export default {
   props: ['sender', 'receiver', 'recWindow'],
 
@@ -36,23 +37,49 @@ export default {
     updateWindows() {
       const senElements = document.getElementsByClassName('a')
       const recElements = document.getElementsByClassName('b')
+      
 
-      const senBuffer = new String(this.sender.buffer).split(',');
-      const recBuffer = new String(this.receiver.buffer).split(',');
+      for (let i = 0; i < senElements.length; i++) {
+        senElements[i].style.backgroundColor = 'white';
+      }
+
+      for (let i = 0; i < recElements.length; i++) {
+        recElements[i].style.backgroundColor = 'white';
+      }
+
+      console.log(this.senderBuffer);
+      this.senderBuffer.forEach((bufEl) => {
+
+        senElements[bufEl].style.backgroundColor = 'red';
+      }) 
+      
+      this.receiverBuffer.forEach((bufEl) => {
+        recElements[bufEl].style.backgroundColor = 'red';
+      }) 
+
+      for (let i = this.sender.shadedFrom; i <= this.sender.shadedTo; i++) {
+        senElements[i].style.backgroundColor = 'green';
+      }
 
 
-      senBuffer.forEach((elem) => {
-        console.log(elem);
-        senElements[new Number(elem)].style.backgroundColor = 'red';
-      })
-    
+      for (let i = this.receiver.shadedFrom; i <= this.receiver.shadedTo; i++) {
+        recElements[i].style.backgroundColor = 'green';
+      }
+      
 
-      recBuffer.forEach((elem) => {
-        recElements[new Number(elem)].style.backgroundColor = 'red';
-      })
+    },
 
-    }
   },
+
+  computed: {
+    senderBuffer() {
+      return this.sender.buffer;
+    },
+    receiverBuffer() {
+      return this.receiver.buffer;
+    },
+    
+  }
 
 }
 
